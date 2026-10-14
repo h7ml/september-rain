@@ -19,7 +19,7 @@ html, body { margin: 0; min-height: 100%; }
 body { background: var(--background); color: var(--foreground); font-family: 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei', 'WenQuanYi Zen Hei', ui-sans-serif, sans-serif; }
 button { font: inherit; }
 
-.story-shell { min-height: 100vh; position: relative; overflow: hidden; display: flex; flex-direction: column; background: radial-gradient(circle at 50% 38%, #30383a 0, #1a1e21 46%, #121416 100%); }
+.story-shell { min-height: 100vh; min-height: 100dvh; height: 100dvh; position: relative; overflow: hidden; display: flex; flex-direction: column; background: radial-gradient(circle at 50% 38%, #30383a 0, #1a1e21 46%, #121416 100%); }
 .story-shell::before { content: ''; position: absolute; inset: 0; opacity: .2; pointer-events: none; background-image: radial-gradient(#e9e5dc 0.7px, transparent 0.7px); background-size: 5px 5px; mix-blend-mode: soft-light; }
 .rain-layer { position: absolute; inset: 0; overflow: hidden; pointer-events: none; opacity: .28; }
 .rain-layer i { position: absolute; top: -15%; width: 1px; height: 90px; background: linear-gradient(transparent, rgba(210, 224, 220, .7)); transform: rotate(18deg); animation: rain linear infinite; }
@@ -173,6 +173,8 @@ h1 { margin: 0; color: #f0ece3; font-size: clamp(40px, 6vw, 72px); font-weight: 
   .legend-dot.visited { background: var(--accent); border-color: var(--accent); }
   .legend-dot.active { background: #f0ece3; border-color: var(--accent); box-shadow: 0 0 7px var(--accent); }
 
-@media (max-width: 600px) { .story-map { height: 350px; } .map-label { max-width: 75px; font-size: 9px; } .generator-panel { padding: 32px 22px; } .generator-panel h2 { font-size: 30px; } }
+@media (max-width: 600px) { .story-map { height: min(350px, 48dvh); } .map-label { max-width: 75px; font-size: 9px; } .generator-panel, .info-panel { padding: 30px 22px; } .generator-panel h2, .info-panel h2 { font-size: 30px; } .map-panel { padding: 28px 16px; } .map-panel > p:not(.eyebrow) { font-size: 12px; margin-bottom: 12px; } .map-legend { gap: 9px; font-size: 9px; } }
+@media (max-width: 760px) { .story-shell { overflow-y: auto; } .topbar { align-items: flex-start; gap: 12px; padding-top: 16px; } .brand { flex: 0 0 auto; } .top-actions { justify-content: flex-end; flex-wrap: wrap; gap: 7px 10px; } .utility-button { padding: 4px 0; font-size: 9px; } .utility-button svg { width: 13px; height: 13px; } .chapter-count { font-size: 9px; } .story-card { margin-top: 0; } }
+@media (max-height: 700px) and (min-width: 601px) { .topbar { padding-top: 16px; } .story-card { padding-top: 12px; } .scene-visual { height: 76px; margin-bottom: 12px; } .story-body { margin-top: 12px; padding-block: 25px 24px; } .story-text { margin-top: 18px; line-height: 1.65; } blockquote { margin-block: 18px 22px; } .page-footer { padding-bottom: 12px; } }
 
 
