@@ -6,11 +6,13 @@ import { ArrowRight, BookOpen, CloudRain, History, Loader2, Plus, RotateCcw, Vol
 const defaultChapters = [
   { year: '01 / 九月', title: '看台上的白裙子', location: '西安 · 军训操场', text: '口号声震天响。我的余光扫到看台最高一级台阶上，那里坐着一个穿白裙子的女孩。整个班都在跟着我动，只有她一个人坐在那里哭。', quote: '所谓伊人，在水一方。', choices: [{ label: '继续领操', note: '有些人，第一次见面就隔着很远。', next: 1 }, { label: '记住她', note: '你不知道，这个念头会持续六年。', next: 1 }] },
   { year: '02 / 雨天', title: '她只回了一个字', location: '城南 · 书店旁的咖啡店', text: '雨把玻璃窗打得模糊。我删删改改，发出一条朋友圈：明天有人一起去逛书店吗？我请咖啡。下面几十个点赞，只有她回了一个字。', quote: '我。', choices: [{ label: '去食堂找她', note: '雨里，我们绕着操场走了一圈，又一圈。', next: 2 }, { label: '等她来找你', note: '有些相遇，不能只等对方迈出第一步。', next: 2 }] },
-  { year: '03 / 初冬', title: '一把伞的距离', location: '校园 · 银杏路', text: '风把最后几片银杏叶吹到伞面。她把伞往你这边偏了偏，自己的肩膀却湿了一小块。你们没有说喜欢，只讨论明天的天气。', quote: '沉默是今晚的康桥。', choices: [{ label: '把伞递回去', note: '有些温柔，不必急着命名。', next: 3 }, { label: '陪她走慢一点', note: '那段路后来很短，记忆却很长。', next: 3 }] },
-  { year: '04 / 六年', title: '把故事讲给她听', location: '校园 · 看台与图书馆窗边', text: '她不爱说话，于是我给她讲故事。马尔克斯、聂鲁达、博尔赫斯。她说她记不住，我说没关系，你听着就行。', quote: '我喜欢你是寂静的，仿佛你消失了一样。', choices: [{ label: '讲下一个故事', note: '故事讲得越多，越像是在讲我们自己。', next: 4 }, { label: '问她在想什么', note: '她弯了一下嘴角，但没有回答。', next: 4 }] },
-  { year: '05 / 夏天', title: '海边寄来的明信片', location: '青岛 · 栈桥尽头', text: '毕业后的第一个夏天，她寄来一张没有署名的明信片。背面只有海浪、日期，和一句：这里的风很大，你会喜欢。', quote: '面朝大海，春暖花开。', choices: [{ label: '认真写一封回信', note: '有些话写下来，才知道自己有多舍不得。', next: 5 }, { label: '把明信片收好', note: '你开始学会珍藏，而不是追问。', next: 5 }] },
-  { year: '06 / 异乡', title: '八个小时的时差', location: '英国 · 凌晨的窗边', text: '视频从每天一次变成三天一次，变成一周一次。我睡醒的时候她也该洗洗睡了。有一次凌晨醒来，她告诉我，那个书店关门了。', quote: '等我回来，继续给你讲。', choices: [{ label: '订回国的机票', note: '多瑙河的夕阳很美，美得让人难过。', next: 6 }, { label: '再等一等', note: '有些告别，只是被推迟，并没有消失。', next: 6 }] },
-  { year: '07 / 后来', title: '倒计时', location: '咸阳机场 · 行李转盘旁', text: '电话响了很多声。没人接。微信弹出来一条消息：你自己打个车吧。没有对不起，没有路上堵了，就六个字。', quote: '爱那么短，遗忘那么长。', choices: [{ label: '站在原地', note: '你站在那堆行李旁边，站了很久。', next: 7 }, { label: '自己打车回去', note: '有些故事结束时，连一句再见都没有。', next: 7 }] },
+  { year: '03 / 初冬', title: '一把伞的距离', location: '校园 · 银杏路', text: '风把最后几片银杏叶吹到伞面。她把伞往你这边偏了偏，自己的肩膀却湿了一小块。你们没有说喜欢，只讨论明天的天气。', quote: '沉默是今晚的康桥。', choices: [{ label: '把伞递回去', note: '有些温柔，不必急着命名。', next: 3 }, { label: '陪她走慢一点', note: '那段路后来很短，记忆却很长。', next: 4 }] },
+  { year: '04 / 放学后', title: '空教室里的纸飞机', location: '校园 · 六号教学楼', text: '她在黑板角落写下一道没有答案的题。你折了一架纸飞机，把答案写在机翼上。它飞过两排课桌，落在她的书里。', quote: '少年心事当拏云。', choices: [{ label: '留下等她', note: '有些答案，不是当场说出口才算数。', next: 5 }, { label: '先走到楼下', note: '你们隔着一层楼梯，却共享了一整个黄昏。', next: 5 }] },
+  { year: '04 / 雪夜', title: '末班公交的暖光', location: '城墙 · 南门公交站', text: '雪下得很轻，末班车迟迟不来。她把耳机分给你一半，歌里唱着“明天见”，你们却谁也没有约明天。', quote: '愿有人陪你颠沛流离。', choices: [{ label: '把围巾给她', note: '你们都装作只是怕她着凉。', next: 5 }, { label: '陪她等到车来', note: '暖光亮起时，离别也有了温度。', next: 5 }] },
+  { year: '05 / 夏天', title: '海边寄来的明信片', location: '青岛 · 栈桥尽头', text: '毕业后的第一个夏天，她寄来一张没有署名的明信片。背面只有海浪、日期，和一句：这里的风很大，你会喜欢。', quote: '面朝大海，春暖花开。', choices: [{ label: '认真写一封回信', note: '有些话写下来，才知道自己有多舍不得。', next: 6 }, { label: '坐火车去见她', note: '有时勇敢不是改变结局，而是让当下不留空白。', next: 7 }] },
+  { year: '06 / 远方', title: '旧书店的最后一盏灯', location: '青岛 · 海风里的书店', text: '你真的去了那家书店。她指着一本你们曾争论过的诗集，说：“原来你还记得。”门外海浪一遍遍替你们回答。', quote: '我们在高处相见。', choices: [{ label: '把书送给她', note: '故事有了书签，却仍没有句号。', next: 8 }, { label: '只拍一张海的照片', note: '有些同行，短到只够留下一张照片。', next: 8 }] },
+  { year: '06 / 异乡', title: '八个小时的时差', location: '英国 · 凌晨的窗边', text: '视频从每天一次变成三天一次，变成一周一次。我睡醒的时候她也该洗洗睡了。有一次凌晨醒来，她告诉我，那个书店关门了。', quote: '等我回来，继续给你讲。', choices: [{ label: '订回国的机票', note: '多瑙河的夕阳很美，美得让人难过。', next: 8 }, { label: '再等一等', note: '有些告别，只是被推迟，并没有消失。', next: 8 }] },
+  { year: '07 / 后来', title: '倒计时', location: '咸阳机场 · 行李转盘旁', text: '电话响了很多声。没人接。微信弹出来一条消息：你自己打个车吧。没有对不起，没有路上堵了，就六个字。', quote: '爱那么短，遗忘那么长。', choices: [{ label: '站在原地', note: '你站在那堆行李旁边，站了很久。', next: 9 }, { label: '自己打车回去', note: '有些故事结束时，连一句再见都没有。', next: 9 }] },
   { year: '08 / 尾声', title: '她先等到了', location: '西安 · 某个毫无征兆的傍晚', text: '你等过她，她也等过你。你等着回去，她等着习惯没有你。只是偶尔，你还是会想起那个雨天，想起她只回了一个字。', quote: '原来，那是倒计时。', choices: [] },
 ]
 
@@ -35,7 +37,14 @@ export default function Page() {
   useEffect(() => {
     try {
       const saved = localStorage.getItem('jianjia-saved-game')
-      if (saved) { const game = JSON.parse(saved) as SavedGame; setChapter(game.chapter); setStarted(game.started); setChapters(game.chapters); setMessage('已恢复上次的阅读进度') }
+      if (saved) {
+        const game = JSON.parse(saved) as SavedGame
+        const hasExpandedStory = game.chapters.length >= defaultChapters.length
+        setChapter(Math.min(game.chapter, (hasExpandedStory ? game.chapters : defaultChapters).length - 1))
+        setStarted(game.started)
+        setChapters(hasExpandedStory ? game.chapters : defaultChapters)
+        setMessage(hasExpandedStory ? '已恢复上次的阅读进度' : '故事已扩展，已为你保留当前阅读位置')
+      }
     } catch { setMessage('保存进度读取失败') }
     setHydrated(true)
   }, [])
