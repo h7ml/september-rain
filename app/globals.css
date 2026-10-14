@@ -16,7 +16,7 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; min-height: 100%; }
-body { background: var(--background); color: var(--foreground); font-family: system-ui, -apple-system, 'Segoe UI', 'Noto Sans CJK SC', 'PingFang SC', Arial, sans-serif; }
+body { background: var(--background); color: var(--foreground); font-family: 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei', 'WenQuanYi Zen Hei', ui-sans-serif, sans-serif; }
 button { font: inherit; }
 
 .story-shell { min-height: 100vh; position: relative; overflow: hidden; display: flex; flex-direction: column; background: radial-gradient(circle at 50% 38%, #30383a 0, #1a1e21 46%, #121416 100%); }
@@ -35,8 +35,28 @@ button { font: inherit; }
 .icon-button { display: grid; place-items: center; padding: 5px; color: #c9ccc5; background: transparent; border: 0; cursor: pointer; }
 .icon-button svg { width: 15px; height: 15px; stroke-width: 1.4; }
 .chapter-count { color: var(--accent); letter-spacing: .1em; }
-.story-card { position: relative; z-index: 1; width: min(760px, calc(100% - 48px)); margin: auto; padding: 28px 0 26px; animation: appear .8s ease both; }
-@keyframes appear { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .story-card { position: relative; z-index: 1; width: min(760px, calc(100% - 48px)); margin: auto; padding: 28px 0 26px; animation: appear .8s ease both; }
+  .scene-visual { position: relative; height: 112px; margin: 0 0 20px; overflow: hidden; border: 1px solid rgba(233,229,220,.12); background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(8,10,11,.18)); isolation: isolate; }
+  .scene-visual::before, .scene-visual::after { content: ''; position: absolute; inset: 0; pointer-events: none; }
+  .scene-visual::before { background: repeating-linear-gradient(105deg, transparent 0 18px, rgba(205,215,215,.08) 19px 20px, transparent 21px 33px); animation: scene-drift 8s linear infinite; }
+  .scene-visual::after { background: radial-gradient(circle at 74% 30%, rgba(200,168,120,.2), transparent 26%), linear-gradient(180deg, transparent 56%, rgba(8,10,11,.5)); }
+  .scene-horizon { position: absolute; right: 9%; bottom: 23px; left: 9%; height: 1px; background: rgba(200,168,120,.38); box-shadow: 0 0 22px rgba(200,168,120,.35); }
+  .scene-orb { position: absolute; top: 22px; left: 17%; width: 38px; height: 38px; border: 1px solid rgba(233,229,220,.36); border-radius: 50%; animation: orb-float 5s ease-in-out infinite; }
+  .scene-orb-two { top: auto; right: 22%; bottom: 16px; left: auto; width: 7px; height: 7px; background: var(--accent); border: 0; box-shadow: 0 0 22px var(--accent); animation-delay: -1.6s; }
+  .scene-caption { position: absolute; right: 14px; bottom: 10px; color: rgba(233,229,220,.65); font: 9px Arial, sans-serif; letter-spacing: .24em; text-transform: uppercase; }
+  .scene-sea .scene-visual { background: linear-gradient(180deg, #253b42, #111d21); }
+  .scene-sea .scene-visual::before { background: repeating-linear-gradient(180deg, transparent 0 13px, rgba(130,190,198,.14) 14px 15px, transparent 16px 28px); animation: wave 5s ease-in-out infinite; }
+  .scene-night .scene-visual { background: linear-gradient(180deg, #111a2b, #15191c); }
+  .scene-night .scene-orb { box-shadow: 0 0 35px rgba(174,190,222,.32); }
+  .scene-snow .scene-visual { background: linear-gradient(180deg, #34414c, #182023); }
+  .scene-snow .scene-visual::before { background-image: radial-gradient(circle, rgba(255,255,255,.65) 0 1px, transparent 2px); background-size: 23px 19px; animation: snow 7s linear infinite; }
+  .scene-spring .scene-visual { background: linear-gradient(180deg, #354139, #1d2722); }
+  .scene-spring .scene-orb-two { background: #b8c894; box-shadow: 0 0 22px #b8c894; }
+  @keyframes scene-drift { to { transform: translateX(-36px); } }
+  @keyframes wave { 50% { transform: translateX(16px) scaleY(1.2); } }
+  @keyframes snow { to { background-position: 0 120px; } }
+  @keyframes orb-float { 50% { transform: translate(16px, -7px); opacity: .55; } }
+  @keyframes appear { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 .story-meta { gap: 16px; color: var(--accent); font-family: Arial, sans-serif; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; }
 .meta-line { width: 42px; height: 1px; background: var(--line); }
 .story-body { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-top: 19px; padding: 48px 10px 43px; text-align: center; }
