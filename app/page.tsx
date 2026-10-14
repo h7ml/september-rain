@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowRight, BookOpen, CloudRain, History, Info, List, Loader2, Plus, RotateCcw, Volume2, VolumeX, X } from 'lucide-react'
+import { ArrowRight, BookOpen, Check, CloudRain, Download, Heart, History, Info, List, Loader2, Plus, RotateCcw, Share2, Volume2, VolumeX, X } from 'lucide-react'
 
 const defaultChapters = [
   { year: '01 / 九月', title: '看台上的白裙子', location: '西安 · 军训操场', text: '口号声震天响。我的余光扫到看台最高一级台阶上，那里坐着一个穿白裙子的女孩。整个班都在跟着我动，只有她一个人坐在那里哭。', quote: '所谓伊人，在水一方。', choices: [{ label: '继续领操', note: '有些人，第一次见面就隔着很远。', next: 1 }, { label: '记住她', note: '你不知道，这个念头会持续六年。', next: 1 }] },
@@ -26,7 +26,7 @@ const defaultChapters = [
 ]
 
 type Chapter = (typeof defaultChapters)[number]
-type SavedGame = { chapter: number; started: boolean; chapters: Chapter[]; title: string }
+type SavedGame = { chapter: number; started: boolean; chapters: Chapter[]; title: string; favorites?: number[] }
 
 export default function Page() {
   const [chapters, setChapters] = useState<Chapter[]>(defaultChapters)
@@ -41,6 +41,8 @@ export default function Page() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [hydrated, setHydrated] = useState(false)
+  const [favorites, setFavorites] = useState<number[]>([])
+  const [shared, setShared] = useState(false)
   const current = chapters[chapter] ?? chapters[0]
   const progress = Math.round((chapter / (chapters.length - 1)) * 100)
   const rainDrops = useMemo(() => Array.from({ length: 42 }, (_, index) => index), [])
@@ -54,6 +56,7 @@ export default function Page() {
         setChapter(Math.min(game.chapter, (hasExpandedStory ? game.chapters : defaultChapters).length - 1))
         setStarted(game.started)
         setChapters(hasExpandedStory ? game.chapters : defaultChapters)
+        setFavorites(game.favorites ?? [])
         setMessage(hasExpandedStory ? '已恢复上次的阅读进度' : '故事已扩展，已为你保留当前阅读位置')
       }
     } catch { setMessage('保存进度读取失败') }
@@ -62,11 +65,20 @@ export default function Page() {
 
   useEffect(() => {
     if (!hydrated) return
-    const game: SavedGame = { chapter, started, chapters, title: chapters[0]?.title ?? '蒹葭' }
+    const game: SavedGame = { chapter, started, chapters, title: chapters[0]?.title ?? '蒹葭', favorites }
     localStorage.setItem('jianjia-saved-game', JSON.stringify(game))
-  }, [chapter, started, chapters, hydrated])
+  }, [chapter, started, chapters, favorites, hydrated])
 
-  const choose = (next: number) => { setStarted(true); setChapter(next); setMessage('进度已自动保存') }
+  const choose = (next: number) => { setStarted(true); setChapter(next); setShared(false); setMessage('进度已自动保存') }
+  const toggleFavorite = () => { setFavorites((items) => items.includes(chapter) ? items.filter((item) => item !== chapter) : [...items, chapter]); setMessage(favorites.includes(chapter) ? '已取消收藏' : '已收藏这张故事卡片') }
+  const shareResult = async () => {
+    const shareText = `《${chapters[0]?.title ?? '蒹葭'}》· ${current.title}\n${current.text}\n\n${current.quote}`
+    try { if (navigator.share) await navigator.share({ title: current.title, text: shareText }); else { await navigator.clipboard.writeText(shareText); setShared(true); setMessage('故事结果已复制到剪贴板') } } catch { setMessage('分享已取消') }
+  }
+  const downloadResult = () => {
+    const content = `《${chapters[0]?.title ?? '蒹葭'}》\n${current.year} · ${current.location}\n\n${current.title}\n\n${current.text}\n\n“${current.quote}”\n\n${current.choices.length ? '我走到了这里。' : '谢谢你走完这段故事。'}`
+    const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([content], { type: 'text/plain;charset=utf-8' })); link.download = `${current.title}-故事结果.txt`; link.click(); URL.revokeObjectURL(link.href); setMessage('故事结果卡已下载')
+  }
   const jumpToLevel = (next: number) => { setChapter(next); setStarted(next > 0); setShowLevels(false); setMessage(`已进入第 ${String(next + 1).padStart(2, '0')} 章`) }
   const restart = () => { setChapter(0); setStarted(false); setMessage('已重新开始，原进度仍会被新的选择覆盖') }
   const generateStory = async (event: React.FormEvent) => {
@@ -77,9 +89,9 @@ export default function Page() {
   return <main className="story-shell"><div className="rain-layer" aria-hidden="true">{rainDrops.map((drop) => <i key={drop} style={{ left: `${(drop * 29) % 101}%`, animationDelay: `${(drop % 9) * -0.7}s`, animationDuration: `${1.3 + (drop % 5) * 0.25}s` }} />)}</div>
     <header className="topbar"><div className="brand"><span className="brand-mark"><CloudRain /></span><span>蒹葭</span><em>INTERACTIVE STORY</em></div><div className="top-actions"><button className="utility-button" onClick={() => setShowInstructions(true)}><Info /> 游戏说明</button><button className="utility-button" onClick={() => setShowLevels(true)}><List /> 选关</button><button className="generator-trigger" onClick={() => setShowGenerator(true)}><Plus /> 新故事</button><button className="icon-button" onClick={() => setSound(!sound)} aria-label={sound ? '关闭声音' : '打开声音'}>{sound ? <Volume2 /> : <VolumeX />}</button><span className="chapter-count">{String(chapter + 1).padStart(2, '0')} / {String(chapters.length).padStart(2, '0')}</span></div></header>
     {message && <div className="save-note" role="status"><History /> {message}</div>}
-    <section className={`story-card ${started ? 'is-started' : ''}`}><div className="story-meta"><span>{current.year}</span><span className="meta-line" /><span>{current.location}</span></div><div className="story-body"><p className="eyebrow">A STORY ABOUT WAITING</p><h1>{current.title}</h1><p className="story-text">{current.text}</p><blockquote>“{current.quote}”</blockquote>{current.choices.length > 0 ? <div className="choices" aria-label="选择你的回应">{current.choices.map((choice) => <button className="choice-button" key={choice.label} onClick={() => choose(choice.next)}><span><strong>{choice.label}</strong><small>{choice.note}</small></span><ArrowRight /></button>)}</div> : <div className="ending-actions"><p className="ending-lead">有些故事的结局不会改变，但你走过的每一条路，都让它拥有了不同的光。</p><p>谢谢你认真读到这里。愿下一场雨落下时，你已经学会把遗憾放在心里柔软的地方，也愿你在新的故事里，先好好照顾自己。</p><button className="restart-button" onClick={restart}><RotateCcw /> 再听一遍</button></div>}</div><div className="story-footer"><BookOpen /><span>选择会改变你记住这段故事的方式</span><div className="progress-track"><div style={{ width: `${Math.max(progress, 8)}%` }} /></div></div></section>
+    <section className={`story-card ${started ? 'is-started' : ''}`}><div className="story-meta"><span>{current.year}</span><span className="meta-line" /><span>{current.location}</span></div><div className="story-body"><p className="eyebrow">A STORY ABOUT WAITING</p><h1>{current.title}</h1><p className="story-text">{current.text}</p><blockquote>“{current.quote}”</blockquote>{current.choices.length > 0 ? <div className="choices" aria-label="选择你的回应">{current.choices.map((choice) => <button className="choice-button" key={choice.label} onClick={() => choose(choice.next)}><span><strong>{choice.label}</strong><small>{choice.note}</small></span><ArrowRight /></button>)}</div> : <div className="ending-actions"><p className="ending-lead">有些故事的结局不会改变，但你走过的每一条路，都让它拥有了不同的光。</p><p>谢谢你认真读到这里。愿下一场雨落下时，你已经学会把遗憾放在心里柔软的地方，也愿你在新的故事里，先好好照顾自己。</p><button className="restart-button" onClick={restart}><RotateCcw /> 再听一遍</button></div>}<div className="result-actions" aria-label="故事结果操作"><button className={favorites.includes(chapter) ? 'result-action active' : 'result-action'} onClick={toggleFavorite}><Heart /> {favorites.includes(chapter) ? '已收藏' : '收藏卡片'}</button><button className="result-action" onClick={shareResult}>{shared ? <Check /> : <Share2 />} {shared ? '已复制' : '分享结果'}</button><button className="result-action" onClick={downloadResult}><Download /> 下载结果</button></div></div><div className="story-footer"><BookOpen /><span>选择会改变你记住这段故事的方式</span><div className="progress-track"><div style={{ width: `${Math.max(progress, 8)}%` }} /></div></div></section>
     <footer className="page-footer"><span>西安 · 九月 · 雨</span><span>scroll to remember</span></footer>
-    {showInstructions && <div className="generator-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setShowInstructions(false) }}><section className="info-panel" role="dialog" aria-modal="true" aria-labelledby="instructions-title"><button className="close-generator" onClick={() => setShowInstructions(false)} aria-label="关闭"><X /></button><p className="eyebrow">HOW TO PLAY</p><h2 id="instructions-title">把遗憾走成自己的故事</h2><p>每一章都会给你两个选择。没有错误答案，选择会改变你记住这段经历的方式。</p><div className="instruction-grid"><div><strong>阅读</strong><span>跟随时间与地点，慢慢读完每个片段。</span></div><div><strong>选择</strong><span>点击回应，进入下一章并留下你的脚印。</span></div><div><strong>继续</strong><span>进度会自动保存，关闭页面后可从上次继续。</span></div></div><p className="info-quote">结局也许相同，但你走过的路，永远只属于你。</p></section></div>}
+    {showInstructions && <div className="generator-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setShowInstructions(false) }}><section className="info-panel" role="dialog" aria-modal="true" aria-labelledby="instructions-title"><button className="close-generator" onClick={() => setShowInstructions(false)} aria-label="关闭"><X /></button><p className="eyebrow">HOW TO PLAY</p><h2 id="instructions-title">把遗憾走成自己的故事</h2><p>每一��都会给你两个选择。没有错误答案，选择会改变你记住这段经历的方式。</p><div className="instruction-grid"><div><strong>阅读</strong><span>跟随时间与地点，慢慢读完每个片段。</span></div><div><strong>选择</strong><span>点击回应，进入下一章并留下你的脚印。</span></div><div><strong>继续</strong><span>进度会自动保存，关闭页面后可从上次继续。</span></div></div><p className="info-quote">结局也许相同，但你走过的路，永远只属于你。</p></section></div>}
     {showLevels && <div className="generator-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setShowLevels(false) }}><section className="info-panel level-panel" role="dialog" aria-modal="true" aria-labelledby="levels-title"><button className="close-generator" onClick={() => setShowLevels(false)} aria-label="关闭"><X /></button><p className="eyebrow">CHAPTER SELECT</p><h2 id="levels-title">选择关卡</h2><p>回到任何已读章节，重新感受那一刻的风。</p><div className="level-list">{chapters.map((level, index) => <button key={`${level.title}-${index}`} className={index === chapter ? 'level-button active' : 'level-button'} onClick={() => jumpToLevel(index)}><span><strong>{String(index + 1).padStart(2, '0')}</strong><span><b>{level.title}</b><small>{level.location}</small></span></span><ArrowRight /></button>)}</div></section></div>}
     {showGenerator && <div className="generator-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setShowGenerator(false) }}><section className="generator-panel" role="dialog" aria-modal="true" aria-labelledby="generator-title"><button className="close-generator" onClick={() => setShowGenerator(false)} aria-label="关闭"><X /></button><p className="eyebrow">CREATE YOUR STORY</p><h2 id="generator-title">写一个新的雨天</h2><p>输入主题与角色，让 AI 为你生成一段可以亲自选择的故事。</p><form onSubmit={generateStory}><label>故事主题<input value={theme} onChange={(event) => setTheme(event.target.value)} placeholder="例如：海边灯塔的最后一夜" required /></label><label>角色设定<textarea value={characters} onChange={(event) => setCharacters(event.target.value)} placeholder="例如：沉默的灯塔管理员，与一位来寻找父亲的女孩" required rows={4} /></label><button className="generate-button" disabled={loading}>{loading ? <Loader2 className="spin" /> : <CloudRain />} {loading ? '正在生成…' : '生成可玩的故事'}</button></form></section></div>}
   </main>
