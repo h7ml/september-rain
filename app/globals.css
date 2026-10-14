@@ -51,7 +51,7 @@ blockquote { margin: 29px auto 34px; color: var(--accent); font-size: 18px; font
 .choice-button small { color: #858d8d; font-family: Arial, sans-serif; font-size: 10px; letter-spacing: .03em; }
 .choice-button svg { width: 15px; height: 15px; color: var(--accent); }
 .ending-actions { flex-direction: column; gap: 19px; }
-.ending-actions p { max-width: 350px; margin: 0; color: #858d8d; font-family: Arial, sans-serif; font-size: 11px; line-height: 1.7; }
+.ending-actions p { max-width: 390px; margin: 0; color: #858d8d; font-family: Arial, sans-serif; font-size: 11px; line-height: 1.8; }.ending-actions .ending-lead { color: #d7c4a2; font-family: inherit; font-size: 16px; line-height: 1.9; }
 .restart-button { display: inline-flex; align-items: center; gap: 8px; padding: 11px 16px; color: var(--accent); background: transparent; border: 1px solid rgba(200,168,120,.45); cursor: pointer; font-family: Arial, sans-serif; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
 .restart-button svg { width: 13px; height: 13px; }
 .story-footer { gap: 9px; padding-top: 16px; color: #72797b; font-family: Arial, sans-serif; font-size: 9px; letter-spacing: .08em; }
