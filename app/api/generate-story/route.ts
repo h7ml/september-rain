@@ -19,6 +19,19 @@ export async function POST(request: Request) {
     const jsonStart = normalizedText.indexOf('{')
     const jsonEnd = normalizedText.lastIndexOf('}')
     const story = JSON.parse(normalizedText.slice(jsonStart, jsonEnd + 1))
+    if (!story || typeof story.title !== 'string' || !Array.isArray(story.chapters) || story.chapters.length < 2) {
+      throw new Error('invalid story shape')
+    }
+    const lastIndex = story.chapters.length - 1
+    story.chapters = story.chapters.map((chapter: { choices?: Array<{ label: string; note: string; next: number }> }, index: number) => ({
+      ...chapter,
+      choices: index === lastIndex
+        ? []
+        : (Array.isArray(chapter.choices) ? chapter.choices : []).map((choice) => ({
+          ...choice,
+          next: Math.min(Math.max(Number.isInteger(choice.next) ? choice.next : index + 1, index + 1), lastIndex),
+        })),
+    }))
     return NextResponse.json(story)
   } catch (error) {
     const message = error instanceof Error && error.message.includes('credit card')
