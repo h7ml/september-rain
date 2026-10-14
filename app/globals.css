@@ -66,7 +66,24 @@ blockquote { margin: 29px auto 34px; color: var(--accent); font-size: 18px; font
 .save-note { position: relative; z-index: 2; display: flex; align-items: center; gap: 7px; width: fit-content; margin: 17px auto -8px; color: #9ba09d; font-family: Arial, sans-serif; font-size: 10px; letter-spacing: .05em; animation: appear .4s ease both; }
 .save-note svg { width: 13px; height: 13px; color: var(--accent); }
 .generator-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 24px; background: rgba(8,10,11,.76); backdrop-filter: blur(8px); }
-.generator-panel { position: relative; width: min(520px, 100%); padding: 40px; color: #b7bbb7; background: #202629; border: 1px solid rgba(233,229,220,.2); box-shadow: 0 24px 80px rgba(0,0,0,.4); }
+.generator-panel, .info-panel { position: relative; width: min(520px, 100%); padding: 40px; color: #b7bbb7; background: #202629; border: 1px solid rgba(233,229,220,.2); box-shadow: 0 24px 80px rgba(0,0,0,.4); }
+.info-panel h2 { margin: 0 0 12px; color: #f0ece3; font-size: 36px; font-weight: 400; letter-spacing: -.04em; }
+.info-panel > p:not(.eyebrow) { margin: 0 0 22px; font-size: 13px; line-height: 1.8; }
+.instruction-grid { display: grid; gap: 10px; margin: 24px 0; }
+.instruction-grid div { display: flex; gap: 15px; padding: 13px; border: 1px solid rgba(233,229,220,.12); background: rgba(255,255,255,.025); }
+.instruction-grid strong { min-width: 38px; color: var(--accent); font-size: 13px; font-weight: 400; }
+.instruction-grid span { color: #9ba09d; font-size: 12px; line-height: 1.6; }
+.info-quote { color: #d7c4a2 !important; font-style: italic; }
+.level-panel { max-height: min(650px, 90vh); overflow-y: auto; }
+.level-list { display: grid; gap: 7px; max-height: 390px; overflow-y: auto; }
+.level-button { display: flex; align-items: center; justify-content: space-between; padding: 12px 13px; color: #c9ccc5; text-align: left; background: rgba(255,255,255,.025); border: 1px solid rgba(233,229,220,.12); cursor: pointer; }
+.level-button:hover, .level-button.active { color: #fff; border-color: rgba(200,168,120,.65); background: rgba(200,168,120,.1); }
+.level-button > span { display: flex; align-items: center; gap: 13px; }
+.level-button strong { color: var(--accent); font: 12px Arial, sans-serif; letter-spacing: .08em; }
+.level-button span span { display: flex; flex-direction: column; gap: 4px; }
+.level-button b { font-size: 13px; font-weight: 400; }
+.level-button small { color: #7f8788; font-size: 10px; }
+.level-button svg { width: 14px; color: var(--accent); }
 .generator-panel h2 { margin: 0 0 12px; color: #f0ece3; font-size: 36px; font-weight: 400; letter-spacing: -.04em; }
 .generator-panel > p:not(.eyebrow) { margin: 0 0 28px; font-size: 13px; line-height: 1.8; }
 .close-generator { position: absolute; top: 18px; right: 18px; display: grid; place-items: center; padding: 5px; color: #9ba09d; background: transparent; border: 0; cursor: pointer; }
