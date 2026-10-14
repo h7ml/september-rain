@@ -3,8 +3,8 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
+  title: '蒹葭｜一段关于等待的互动故事',
+  description: '在西安九月的雨里，做出你的选择，听完一段关于相遇、等待与告别的故事。',
   generator: 'v0.app',
   icons: {
     icon: [
