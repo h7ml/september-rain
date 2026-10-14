@@ -19,7 +19,7 @@ html, body { margin: 0; min-height: 100%; }
 body { background: var(--background); color: var(--foreground); font-family: 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei', 'WenQuanYi Zen Hei', ui-sans-serif, sans-serif; }
 button { font: inherit; }
 
-.story-shell { min-height: 100vh; min-height: 100dvh; height: 100dvh; position: relative; overflow: hidden; display: flex; flex-direction: column; background: radial-gradient(circle at 50% 38%, #30383a 0, #1a1e21 46%, #121416 100%); }
+.story-shell { min-height: 100vh; min-height: 100dvh; position: relative; overflow-x: hidden; display: flex; flex-direction: column; background: radial-gradient(circle at 50% 38%, #30383a 0, #1a1e21 46%, #121416 100%); }
 .story-shell::before { content: ''; position: absolute; inset: 0; opacity: .2; pointer-events: none; background-image: radial-gradient(#e9e5dc 0.7px, transparent 0.7px); background-size: 5px 5px; mix-blend-mode: soft-light; }
 .rain-layer { position: absolute; inset: 0; overflow: hidden; pointer-events: none; opacity: .28; }
 .rain-layer i { position: absolute; top: -15%; width: 1px; height: 90px; background: linear-gradient(transparent, rgba(210, 224, 220, .7)); transform: rotate(18deg); animation: rain linear infinite; }
