@@ -15,7 +15,7 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; min-height: 100%; }
-body { background: var(--background); color: var(--foreground); font-family: Arial, 'Noto Sans CJK SC', 'PingFang SC', sans-serif; }
+body { background: var(--background); color: var(--foreground); font-family: system-ui, -apple-system, 'Segoe UI', 'Noto Sans CJK SC', 'PingFang SC', Arial, sans-serif; }
 button { font: inherit; }
 
 .story-shell { min-height: 100vh; position: relative; overflow: hidden; display: flex; flex-direction: column; background: radial-gradient(circle at 50% 38%, #30383a 0, #1a1e21 46%, #121416 100%); }
@@ -78,7 +78,13 @@ h1 { margin: 0; color: #f0ece3; font-size: clamp(40px, 6vw, 72px); font-weight: 
 .save-note svg { width: 13px; height: 13px; color: var(--accent); }
 .generator-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 24px; background: rgba(8,10,11,.76); backdrop-filter: blur(8px); }
 .generator-panel, .info-panel { position: relative; width: min(520px, 100%); padding: 40px; color: #b7bbb7; background: #202629; border: 1px solid rgba(233,229,220,.2); box-shadow: 0 24px 80px rgba(0,0,0,.4); }
-.info-panel h2 { margin: 0 0 12px; color: #f0ece3; font-size: 36px; font-weight: 400; letter-spacing: -.04em; }
+  .info-panel h2 { margin: 0 0 12px; color: #f0ece3; font-size: 36px; font-weight: 400; letter-spacing: -.04em; }
+  .original-panel { width: min(720px, 100%); }
+  .original-text { display: block; width: 100%; min-height: 300px; max-height: 46vh; resize: vertical; padding: 16px; color: #d7d9d4; background: rgba(8,10,11,.45); border: 1px solid rgba(233,229,220,.14); font-family: inherit; font-size: 13px; line-height: 1.9; outline: none; }
+  .original-text:focus { border-color: rgba(200,168,120,.7); box-shadow: 0 0 0 2px rgba(200,168,120,.12); }
+  .original-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+  .original-actions .generate-button { width: auto; margin: 0; }
+  .original-actions .archive-clear { margin: 0; }
 .info-panel > p:not(.eyebrow) { margin: 0 0 22px; font-size: 13px; line-height: 1.8; }
 .instruction-grid { display: grid; gap: 10px; margin: 24px 0; }
 .instruction-grid div { display: flex; gap: 15px; padding: 13px; border: 1px solid rgba(233,229,220,.12); background: rgba(255,255,255,.025); }
