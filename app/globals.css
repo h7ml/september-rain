@@ -113,6 +113,8 @@ h1 { margin: 0; color: #f0ece3; font-size: clamp(40px, 6vw, 72px); font-weight: 
 .instruction-grid span { color: #9ba09d; font-size: 12px; line-height: 1.6; }
   .info-quote { color: #d7c4a2 !important; font-style: italic; }
   .copyright-note { color: #737b7b !important; font-family: Arial, sans-serif; font-size: 10px !important; letter-spacing: .04em; }
+  .copyright-link { color: #8f9a92; text-decoration: underline; text-underline-offset: 2px; }
+  .copyright-link:hover { color: var(--accent); }
 .level-panel { max-height: min(650px, 90vh); overflow-y: auto; }
 .level-list { display: grid; gap: 7px; max-height: 390px; overflow-y: auto; }
 .level-button { display: flex; align-items: center; justify-content: space-between; padding: 12px 13px; color: #c9ccc5; text-align: left; background: rgba(255,255,255,.025); border: 1px solid rgba(233,229,220,.12); cursor: pointer; }
