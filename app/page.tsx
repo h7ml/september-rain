@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowRight, BookOpen, Check, CloudRain, Download, Heart, History, Info, List, Loader2, Map, Plus, RotateCcw, Share2, Volume2, VolumeX, X } from 'lucide-react'
+import SceneCanvas from '@/components/scene/scene-canvas'
 
 const defaultChapters = [
   { year: '01 / 九月', title: '看台上的白裙子', location: '西安 · 军训操场', text: '口号声震天响。我的余光扫到看台最高一级台阶上，那里坐着一个穿白裙子的女孩。整个班都在跟着我动，只有她一个人坐在那里哭。', quote: '所谓伊人，在水一方。', choices: [{ label: '继续领操', note: '有些人，第一次见面就隔着很远。', next: 1 }, { label: '记住她', note: '你不知道，这个念头会持续六年。', next: 1 }] },
@@ -49,6 +50,16 @@ export default function Page() {
   const [showOriginal, setShowOriginal] = useState(false)
   const [shared, setShared] = useState(false)
   const [cardCopied, setCardCopied] = useState(false)
+  /** 选项按钮悬停：驱动 3D 场景的「呼吸」反馈 */
+  const [choiceHovered, setChoiceHovered] = useState(false)
+  /** 每次做出选择递增，作为触发场景闪光的一次性信号 */
+  const [flashToken, setFlashToken] = useState(0)
+  /**
+   * 记录每一章选中的候选序号，用来推导整体「暖度」。
+   * 同一章重选会覆盖旧值，所以颜色始终反映当前这条路径，
+   * 而不是历史点击的累加。
+   */
+  const [choiceIndexes, setChoiceIndexes] = useState<Record<number, number>>({})
   const current = chapters[chapter] ?? chapters[0]
   const originalStory = `西安的九月，总是阴的。法桐叶子还没黄透，雨说来就来。
 
@@ -68,6 +79,39 @@ export default function Page() {
   const sceneClass = getSceneClass(current)
   const progress = Math.round((chapter / Math.max(chapters.length - 1, 1)) * 100)
   const rainDrops = useMemo(() => Array.from({ length: 42 }, (_, index) => index), [])
+
+  /**
+   * 场景暖度：由已做出的选择推导，取值 [-1, 1]。
+   *
+   * 每个选项按它在当章中的相对位置计分——排在前面的选项偏向克制与等候，
+   * 排在后面的偏向主动与靠近，所以首选项偏冷、末选项偏暖。
+   * 取平均而非累加，避免章节越多偏移越极端。
+   */
+  const sceneWarmth = useMemo(() => {
+    const scores = Object.entries(choiceIndexes)
+      .map(([chapterKey, index]) => {
+        const level = chapters[Number(chapterKey)]
+        const total = level?.choices.length ?? 0
+        if (total < 2) return null
+        // 单选项章节不产生倾向，跳过以免把平均值拉向 0
+        return (index / (total - 1)) * 2 - 1
+      })
+      .filter((score): score is number => score !== null)
+
+    if (!scores.length) return 0
+    const average = scores.reduce((sum, score) => sum + score, 0) / scores.length
+    return Math.max(-1, Math.min(1, average))
+  }, [choiceIndexes, chapters])
+
+  /** 选项序号越高越暖，点击时的闪光色也随之在同一色阶上平移。 */
+  const choiceFlashColor = (index: number, total: number) => {
+    const ratio = total < 2 ? 0 : index / (total - 1)
+    // 冷端 #a8c8e8（偏蓝）→ 暖端 #e8c088（偏琥珀）
+    const red = Math.round(0xa8 + (0xe8 - 0xa8) * ratio)
+    const green = Math.round(0xc8 + (0xc0 - 0xc8) * ratio)
+    const blue = Math.round(0xe8 + (0x88 - 0xe8) * ratio)
+    return `rgb(${red}, ${green}, ${blue})`
+  }
 
   useEffect(() => {
     try {
@@ -107,7 +151,20 @@ export default function Page() {
       : `${current.title}｜${chapters[0]?.title ?? '蒹葭'}｜蒹葭互动故事`
   }, [current.title, chapters, isEnding])
 
-  const choose = (next: number) => { setStarted(true); setChapter(next); setShared(false); setMessage('进度已自动保存，并写入历史存档') }
+  /**
+   * 做出选择。
+   * `choiceIndex` 用于推导场景暖度与闪光色，缺省（例如程序化跳转）时按中立处理。
+   */
+  const choose = (next: number, choiceIndex?: number) => {
+    setStarted(true)
+    setChapter(next)
+    setShared(false)
+    if (choiceIndex !== undefined) {
+      setChoiceIndexes((indexes) => ({ ...indexes, [chapter]: choiceIndex }))
+      setFlashToken((token) => token + 1)
+    }
+    setMessage('进度已自动保存，并写入历史存档')
+  }
   const restoreArchive = (archive: StoryArchive) => { setChapters(archive.chapters); setChapter(archive.chapter); setStarted(archive.chapter > 0); setShowArchives(false); setMessage(`已载入「${archive.chapterTitle}」存档`) }
   const clearArchives = () => { setArchives([]); setMessage('历史存档已清空') }
   const toggleFavorite = () => { setFavorites((items) => items.includes(chapter) ? items.filter((item) => item !== chapter) : [...items, chapter]); setMessage(favorites.includes(chapter) ? '已取消收藏' : '已收藏这张故事卡片') }
@@ -120,8 +177,96 @@ export default function Page() {
     const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([content], { type: 'text/plain;charset=utf-8' })); link.download = `${current.title}-故事结果.txt`; link.click(); URL.revokeObjectURL(link.href); setMessage('故事结果卡已下载')
   }
   const copyCard = async () => {
-    const card = `《${chapters[0]?.title ?? '蒹葭'}》 · ${current.title}\n${current.year} · ${current.location}\n\n${current.text}\n\n“${current.quote}”\n\n愿你把遗憾变成力量，继续向光而行。\n\n来自：蒹葭互动故事 · jiangjia.story`
-    await navigator.clipboard.writeText(card); setCardCopied(true); setMessage('结果卡片已复制，可以分享给朋友'); window.setTimeout(() => setCardCopied(false), 2200)
+    // 用 Canvas 绘制一张 900×540 的故事卡片图片。
+    // 配色按当前场景类型微调，内容包含章节号、标题、正文节选、引言和落款。
+    const W = 900, H = 540, DPR = 2
+    const canvas = document.createElement('canvas')
+    canvas.width = W * DPR; canvas.height = H * DPR
+    const ctx = canvas.getContext('2d')!
+    ctx.scale(DPR, DPR)
+
+    // 背景渐变：从 sceneClass 的色调取样，场景夜色用蓝黑，海景用墨绿，其余雨色
+    const bgMap: Record<string, [string, string]> = {
+      'scene-sea':    ['#1a2f34', '#0d1a1e'],
+      'scene-night':  ['#111827', '#0d1219'],
+      'scene-snow':   ['#1e2d34', '#111a20'],
+      'scene-spring': ['#1e2820', '#101611'],
+    }
+    const [bgTop, bgBot] = bgMap[sceneClass] ?? ['#1e2929', '#0d1213']
+    const grad = ctx.createLinearGradient(0, 0, 0, H)
+    grad.addColorStop(0, bgTop); grad.addColorStop(1, bgBot)
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H)
+
+    // 纹理：细颗粒感（每 4px 一个半透明灰点）
+    ctx.fillStyle = 'rgba(200,210,210,0.028)'
+    for (let y = 0; y < H; y += 4) for (let x = 0; x < W; x += 4) ctx.fillRect(x, y, 1, 1)
+
+    // 左侧装饰竖线
+    ctx.strokeStyle = 'rgba(200,180,140,0.22)'; ctx.lineWidth = 1
+    ctx.beginPath(); ctx.moveTo(52, 52); ctx.lineTo(52, H - 52); ctx.stroke()
+
+    // 章节标签
+    ctx.fillStyle = 'rgba(200,178,138,0.72)'
+    ctx.font = `600 11px 'Arial', sans-serif`
+    ctx.letterSpacing = '0.22em'
+    const chNum = String(chapter + 1).padStart(2, '0')
+    ctx.fillText(`CHAPTER ${chNum} · ${current.year} · ${current.location}`, 72, 76)
+
+    // 主标题
+    ctx.fillStyle = '#f0ece3'
+    const titleSize = Math.min(64, Math.max(36, Math.floor(540 / (current.title.length + 1))))
+    ctx.font = `400 ${titleSize}px 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif`
+    ctx.fillText(current.title, 72, 76 + titleSize + 18)
+
+    // 正文节选（最多 80 字，换行）
+    ctx.font = `400 15px 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif`
+    ctx.fillStyle = 'rgba(224,218,206,0.82)'
+    const excerpt = current.text.length > 80 ? current.text.slice(0, 78) + '…' : current.text
+    const lineH = 24, lineW = W - 72 - 52, textY0 = 76 + titleSize + 18 + 38
+    // 简单按字数折行
+    const chars = Array.from(excerpt)
+    let line = '', lines: string[] = []
+    for (const ch of chars) {
+      const test = line + ch
+      if (ctx.measureText(test).width > lineW) { lines.push(line); line = ch }
+      else line = test
+    }
+    if (line) lines.push(line)
+    lines.slice(0, 4).forEach((l, i) => ctx.fillText(l, 72, textY0 + i * lineH))
+
+    // 引言
+    const quoteY = H - 52 - 58
+    ctx.strokeStyle = 'rgba(200,178,138,0.35)'; ctx.lineWidth = 1
+    ctx.beginPath(); ctx.moveTo(72, quoteY - 10); ctx.lineTo(W - 52, quoteY - 10); ctx.stroke()
+    ctx.fillStyle = 'rgba(200,178,138,0.85)'
+    ctx.font = `italic 400 15px 'Noto Serif SC', Georgia, serif`
+    ctx.fillText(`”${current.quote}”`, 72, quoteY + 14)
+
+    // 落款
+    ctx.fillStyle = 'rgba(150,160,158,0.65)'
+    ctx.font = `400 11px 'Arial', sans-serif`
+    ctx.fillText('蒹葭互动故事  ·  jiangjia.story', W - 52 - ctx.measureText('蒹葭互动故事  ·  jiangjia.story').width, H - 52)
+
+    // 写入剪贴板，降级为下载
+    try {
+      const blob = await new Promise<Blob>((res, rej) => canvas.toBlob(b => b ? res(b) : rej(new Error('toBlob failed')), 'image/png'))
+      if (typeof ClipboardItem !== 'undefined') {
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+        setCardCopied(true); setMessage('卡片图片已复制，可直接粘贴到微信、微博或相册')
+      } else {
+        // Safari 等不支持 ClipboardItem 时直接触发下载
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a'); a.href = url; a.download = `${current.title}-故事卡片.png`
+        a.click(); URL.revokeObjectURL(url)
+        setCardCopied(true); setMessage('卡片图片已下载（该浏览器不支持直接复制图片）')
+      }
+    } catch {
+      // 权限被拒等异常时降级为文本复制
+      const text = `《${chapters[0]?.title ?? '蒹葭'}》·${current.title}\n${current.year} · ${current.location}\n\n${current.text}\n\n”${current.quote}”\n\n来自：蒹葭互动故事 · jiangjia.story`
+      await navigator.clipboard.writeText(text)
+      setCardCopied(true); setMessage('已复制为文字卡片（请在浏览器设置中允许访问剪贴板以复制图片）')
+    }
+    window.setTimeout(() => setCardCopied(false), 2200)
   }
   const copyOriginal = async () => { await navigator.clipboard.writeText(`${originalStory}\n\n—— 原文故事版权归提供者所有\n整理与互动体验：蒹葭互动故事 · jiangjia.story`); setMessage('原文故事已复制，版权信息也已保留') }
   const jumpToLevel = (next: number) => { setChapter(next); setStarted(next > 0); setShowLevels(false); setMessage(`已进入第 ${String(next + 1).padStart(2, '0')} 章`) }
@@ -131,10 +276,10 @@ export default function Page() {
     try { const response = await fetch('/api/generate-story', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ theme, characters }) }); const data = await response.json(); if (!response.ok) throw new Error(data.error); setChapters(data.chapters); setChapter(0); setStarted(false); setShowGenerator(false); setMessage(`《${data.title}》已经准备好了`); setTheme(''); setCharacters('') } catch (error) { setMessage(error instanceof Error ? error.message : '生成失败，请稍后再试') } finally { setLoading(false) }
   }
 
-  return <main className={`story-shell ${sceneClass}-cursor`}><div className="rain-layer" aria-hidden="true">{rainDrops.map((drop) => <i key={drop} style={{ left: `${(drop * 29) % 101}%`, animationDelay: `${(drop % 9) * -0.7}s`, animationDuration: `${1.3 + (drop % 5) * 0.25}s` }} />)}</div>
+  return <><SceneCanvas chapter={chapter} hovered={choiceHovered} flashToken={flashToken} warmth={sceneWarmth} flashColor={choiceFlashColor(choiceIndexes[chapter] ?? 0, current.choices.length)} /><main className={`story-shell ${sceneClass}-cursor`}><div className="rain-layer" aria-hidden="true">{rainDrops.map((drop) => <i key={drop} style={{ left: `${(drop * 29) % 101}%`, animationDelay: `${(drop % 9) * -0.7}s`, animationDuration: `${1.3 + (drop % 5) * 0.25}s` }} />)}</div>
     <header className="topbar"><div className="brand"><span className="brand-mark"><CloudRain /></span><span>蒹葭</span><em>INTERACTIVE STORY</em></div><div className="top-actions"><button className="utility-button" onClick={() => setShowInstructions(true)}><Info /> 游戏说明</button><button className="utility-button" onClick={() => setShowLevels(true)}><List /> 选关</button><button className="utility-button" onClick={() => setShowMap(true)}><Map /> 地图</button><button className="utility-button" onClick={() => setShowArchives(true)}><History /> 存档 <b className="archive-count">{archives.length}</b></button><button className="utility-button" onClick={() => setShowOriginal(true)}><BookOpen /> 原文</button><button className="generator-trigger" onClick={() => setShowGenerator(true)}><Plus /> 新故事</button><button className="icon-button" onClick={() => setSound(!sound)} aria-label={sound ? '关闭声音' : '打开声音'}>{sound ? <Volume2 /> : <VolumeX />}</button><span className="chapter-count">{String(chapter + 1).padStart(2, '0')} / {String(chapters.length).padStart(2, '0')}</span></div></header>
     {message && <div className="save-note" role="status"><History /> {message}</div>}
-    <section className={`story-card ${started ? 'is-started' : ''} ${sceneClass}`}><div className="scene-visual" aria-hidden="true"><span className="scene-orb" /><span className="scene-orb scene-orb-two" /><span className="scene-horizon" /><span className="scene-caption">{sceneClass === 'scene-sea' ? '潮汐记忆' : sceneClass === 'scene-night' ? '凌晨一点' : sceneClass === 'scene-snow' ? '雪落无声' : sceneClass === 'scene-spring' ? '来日方长' : '雨中的记忆'}</span></div><div className="story-meta"><span>{current.year}</span><span className="meta-line" /><span>{current.location}</span></div><div className="story-body"><p className="eyebrow">A STORY ABOUT WAITING</p><h1>{current.title}</h1><p className="story-text">{current.text}</p>{isRomanceScene && <div className="romance-scene" aria-label="亲密剧情"><span className="romance-kicker">A QUIET MOMENT</span><p>{romanceScene}</p></div>}<blockquote>“{current.quote}”</blockquote>{!isEnding ? <div className="choices" aria-label="选择你的回应">{current.choices.map((choice) => <button className="choice-button" key={choice.label} onClick={() => choose(Math.min(choice.next, chapters.length - 1))}><span><strong>{choice.label}</strong><small>{choice.note}</small></span><ArrowRight /></button>)}</div> : <div className="ending-actions"><p className="ending-lead">遗憾不是故事的终点，而是你开始把自己放回人生中心的那一刻。</p><p>你没有改变过去，却改变了与过去相处的方式。那些没有走到最后的相遇，依然教会你真诚、勇敢、温柔，也让你更清楚自己值得怎样的爱与生活。</p><div className="ending-summary"><strong>给此刻的你</strong><span>愿你把失去变成力量，把等待变成成长。下一段路不必复制旧故事，带着走过的雨，你仍然可以向光而行。</span></div><button className="restart-button" onClick={restart}><RotateCcw /> 再听一遍</button></div>}<div className="result-actions" aria-label="故事结果操作"><button className={favorites.includes(chapter) ? 'result-action active' : 'result-action'} onClick={toggleFavorite}><Heart /> {favorites.includes(chapter) ? '已收藏' : '收藏卡片'}</button><button className="result-action" onClick={shareResult}>{shared ? <Check /> : <Share2 />} {shared ? '已复制' : '分享结果'}</button><button className="result-action" onClick={copyCard}>{cardCopied ? <Check /> : <BookOpen />} {cardCopied ? '卡片已复制' : '复制为卡片'}</button><button className="result-action" onClick={downloadResult}><Download /> 下载结果</button></div></div><div className="story-footer"><BookOpen /><span>选择会改变你记住这段故事的方式</span><div className="progress-track"><div style={{ width: `${Math.max(progress, 8)}%` }} /></div></div></section>
+    <section className={`story-card ${started ? 'is-started' : ''} ${sceneClass}`}><div className="story-meta"><span>{current.year}</span><span className="meta-line" /><span>{current.location}</span><span className="scene-caption">{sceneClass === 'scene-sea' ? '潮汐记忆' : sceneClass === 'scene-night' ? '凌晨一点' : sceneClass === 'scene-snow' ? '雪落无声' : sceneClass === 'scene-spring' ? '来日方长' : '雨中的记忆'}</span></div><div className="story-body"><p className="eyebrow">A STORY ABOUT WAITING</p><h1>{current.title}</h1><p className="story-text">{current.text}</p>{isRomanceScene && <div className="romance-scene" aria-label="亲密剧情"><span className="romance-kicker">A QUIET MOMENT</span><p>{romanceScene}</p></div>}<blockquote>“{current.quote}”</blockquote>{!isEnding ? <div className="choices" aria-label="选择你的回应">{current.choices.map((choice, index) => <button className="choice-button" key={choice.label} onClick={() => choose(Math.min(choice.next, chapters.length - 1), index)} onPointerEnter={() => setChoiceHovered(true)} onPointerLeave={() => setChoiceHovered(false)} onFocus={() => setChoiceHovered(true)} onBlur={() => setChoiceHovered(false)}><span><strong>{choice.label}</strong><small>{choice.note}</small></span><ArrowRight /></button>)}</div> : <div className="ending-actions"><p className="ending-lead">遗憾不是故事的终点，而是你开始把自己放回人生中心的那一刻。</p><p>你没有改变过去，却改变了与过去相处的方式。那些没有走到最后的相遇，依然教会你真诚、勇敢、温柔，也让你更清楚自己值得怎样的爱与生活。</p><div className="ending-summary"><strong>给此刻的你</strong><span>愿你把失去变成力量，把等待变成成长。下一段路不必复制旧故事，带着走过的雨，你仍然可以向光而行。</span></div><button className="restart-button" onClick={restart}><RotateCcw /> 再听一遍</button></div>}<div className="result-actions" aria-label="故事结果操作"><button className={favorites.includes(chapter) ? 'result-action active' : 'result-action'} onClick={toggleFavorite}><Heart /> {favorites.includes(chapter) ? '已收藏' : '收藏卡片'}</button><button className="result-action" onClick={shareResult}>{shared ? <Check /> : <Share2 />} {shared ? '已复制' : '分享结果'}</button><button className="result-action" onClick={copyCard}>{cardCopied ? <Check /> : <BookOpen />} {cardCopied ? '卡片已复制' : '复制为卡片'}</button><button className="result-action" onClick={downloadResult}><Download /> 下载结果</button></div></div><div className="story-footer"><BookOpen /><span>选择会改变你记住这段故事的方式</span><div className="progress-track"><div style={{ width: `${Math.max(progress, 8)}%` }} /></div></div></section>
     <footer className="page-footer"><span>西安 · 九月 · 雨</span><span>scroll to remember</span></footer>
     {showInstructions && <div className="generator-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setShowInstructions(false) }}><section className="info-panel" role="dialog" aria-modal="true" aria-labelledby="instructions-title"><button className="close-generator" onClick={() => setShowInstructions(false)} aria-label="关闭"><X /></button><p className="eyebrow">HOW TO PLAY</p><h2 id="instructions-title">把遗憾走成自己的故事</h2><p>每一关都会给你两个选择。没有错误答案，选择会改变你记住这段经历的方式。</p><div className="instruction-grid"><div><strong>阅读</strong><span>跟随时间与地点，慢慢读完每个片段。</span></div><div><strong>选择</strong><span>点击回应，进入下一章并留下你的脚印。</span></div><div><strong>继续</strong><span>进度会自动保存，关闭页面后可从上次继续。</span></div></div><p className="info-quote">结局也许相同，但你走过的路，永远只属于你。</p><p className="copyright-note">原文故事内容按你的要求保留，版权归原作者所有���</p></section></div>}
     {showLevels && <div className="generator-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setShowLevels(false) }}><section className="info-panel level-panel" role="dialog" aria-modal="true" aria-labelledby="levels-title"><button className="close-generator" onClick={() => setShowLevels(false)} aria-label="关闭"><X /></button><p className="eyebrow">CHAPTER SELECT</p><h2 id="levels-title">选择关卡</h2><p>回到任何已读章节，重新感受那一刻的风。</p><div className="level-list">{chapters.map((level, index) => <button key={`${level.title}-${index}`} className={index === chapter ? 'level-button active' : 'level-button'} onClick={() => jumpToLevel(index)}><span><strong>{String(index + 1).padStart(2, '0')}</strong><span><b>{level.title}</b><small>{level.location}</small></span></span><ArrowRight /></button>)}</div></section></div>}
@@ -142,5 +287,5 @@ export default function Page() {
     {showArchives && <div className="generator-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setShowArchives(false) }}><section className="info-panel archive-panel" role="dialog" aria-modal="true" aria-labelledby="archives-title"><button className="close-generator" onClick={() => setShowArchives(false)} aria-label="关闭"><X /></button><p className="eyebrow">STEAM LIBRARY / SAVES</p><h2 id="archives-title">历史结果与存档</h2><p>每一次选择都会留下一个可回看的瞬间。最多保留最近 12 条记录。</p>{archives.length ? <div className="archive-list">{archives.map((archive) => <button className="archive-button" key={archive.id} onClick={() => restoreArchive(archive)}><span className="archive-cover"><BookOpen /></span><span><strong>{archive.title}</strong><b>第 {String(archive.chapter + 1).padStart(2, '0')} 章 · {archive.chapterTitle}</b><small>{archive.savedAt} · 点击载入</small></span><ArrowRight /></button>)}</div> : <div className="archive-empty"><History /><strong>还没有历史存档</strong><span>开始一段故事，你的选择会自动出现在这里。</span></div>}<button className="archive-clear" onClick={clearArchives} disabled={!archives.length}>清空历史存档</button></section></div>}
     {showOriginal && <div className="generator-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setShowOriginal(false) }}><section className="info-panel original-panel" role="dialog" aria-modal="true" aria-labelledby="original-title"><button className="close-generator" onClick={() => setShowOriginal(false)} aria-label="关闭"><X /></button><p className="eyebrow">ORIGINAL TEXT / COPYRIGHT</p><h2 id="original-title">原文故事</h2><p>保留你提供的原文叙事。你可以随时复制全文，或将当前结果复制为卡片分享。</p><textarea className="original-text" value={originalStory} readOnly aria-label="原文故事全文" /><div className="original-actions"><button className="generate-button" onClick={copyOriginal}><Check /> 复制原文</button><button className="archive-clear" onClick={() => setShowOriginal(false)}>返回故事</button></div><p className="copyright-note">原文版权归原作者所有。复制与分享时请保留版权信息。</p></section></div>}
     {showGenerator && <div className="generator-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setShowGenerator(false) }}><section className="generator-panel" role="dialog" aria-modal="true" aria-labelledby="generator-title"><button className="close-generator" onClick={() => setShowGenerator(false)} aria-label="关闭"><X /></button><p className="eyebrow">CREATE YOUR STORY</p><h2 id="generator-title">写一个新的雨天</h2><p>输入主题与角色，让 AI 为你生成一段可以亲自选择的故事。</p><form onSubmit={generateStory}><label>故事主题<input value={theme} onChange={(event) => setTheme(event.target.value)} placeholder="例如：海边灯塔的最后一夜" required /></label><label>角色设定<textarea value={characters} onChange={(event) => setCharacters(event.target.value)} placeholder="例如：沉默的灯塔管理员，与一位来寻找父亲的女孩" required rows={4} /></label><button className="generate-button" disabled={loading}>{loading ? <Loader2 className="spin" /> : <CloudRain />} {loading ? '正在生成…' : '生成可玩的故事'}</button></form></section></div>}
-  </main>
+  </main></>
 }
