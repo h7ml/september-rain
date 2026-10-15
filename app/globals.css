@@ -15,16 +15,16 @@
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; min-height: 100%; }
-body { background: var(--background); color: var(--foreground); font-family: 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei', 'WenQuanYi Zen Hei', ui-sans-serif, sans-serif; }
+html, body { margin: 0; min-height: 100%; background: #0d1213; }
+body { background: transparent; color: var(--foreground); font-family: 'Noto Sans SC', 'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei', 'WenQuanYi Zen Hei', ui-sans-serif, sans-serif; }
 button { font: inherit; }
 
-.story-shell { min-height: 100vh; min-height: 100dvh; position: relative; overflow-x: hidden; display: flex; flex-direction: column; background: radial-gradient(circle at 50% 38%, #30383a 0, #1a1e21 46%, #121416 100%); }
-.story-shell::before { content: ''; position: absolute; inset: 0; opacity: .2; pointer-events: none; background-image: radial-gradient(#e9e5dc 0.7px, transparent 0.7px); background-size: 5px 5px; mix-blend-mode: soft-light; }
-.rain-layer { position: absolute; inset: 0; overflow: hidden; pointer-events: none; opacity: .28; }
+.story-shell { min-height: 100vh; min-height: 100dvh; position: relative; overflow-x: hidden; display: flex; flex-direction: column; background: transparent; }
+.story-shell::before { content: ''; position: absolute; inset: 0; z-index: 2; opacity: .12; pointer-events: none; background-image: radial-gradient(#e9e5dc 0.7px, transparent 0.7px); background-size: 5px 5px; mix-blend-mode: soft-light; }
+.rain-layer { position: absolute; inset: 0; z-index: 2; overflow: hidden; pointer-events: none; opacity: .16; }
 .rain-layer i { position: absolute; top: -15%; width: 1px; height: 90px; background: linear-gradient(transparent, rgba(210, 224, 220, .7)); transform: rotate(18deg); animation: rain linear infinite; }
 @keyframes rain { to { transform: translate3d(-100px, 120vh, 0) rotate(18deg); } }
-.topbar, .page-footer { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; width: min(1120px, calc(100% - 64px)); margin-inline: auto; }
+.topbar, .page-footer { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; width: min(1120px, calc(100% - 64px)); margin-inline: auto; }
 .topbar { padding-top: 28px; color: #b3b5b2; font-family: Arial, sans-serif; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; }
 .brand, .top-actions, .page-footer, .story-footer, .story-meta, .choice-button, .ending-actions { display: flex; align-items: center; }
 .brand { gap: 10px; font-weight: 600; color: #e9e5dc; }
@@ -35,37 +35,31 @@ button { font: inherit; }
 .icon-button { display: grid; place-items: center; padding: 5px; color: #c9ccc5; background: transparent; border: 0; cursor: pointer; }
 .icon-button svg { width: 15px; height: 15px; stroke-width: 1.4; }
 .chapter-count { color: var(--accent); letter-spacing: .1em; }
-  .story-card { position: relative; z-index: 1; width: min(760px, calc(100% - 48px)); margin: auto; padding: 28px 0 26px; animation: appear .8s ease both; }
-  .scene-visual { position: relative; height: 112px; margin: 0 0 20px; overflow: hidden; border: 1px solid rgba(233,229,220,.12); background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(8,10,11,.18)); isolation: isolate; }
-  .scene-visual::before, .scene-visual::after { content: ''; position: absolute; inset: 0; pointer-events: none; }
-  .scene-visual::before { background: repeating-linear-gradient(105deg, transparent 0 18px, rgba(205,215,215,.08) 19px 20px, transparent 21px 33px); animation: scene-drift 8s linear infinite; }
-  .scene-visual::after { background: radial-gradient(circle at 74% 30%, rgba(200,168,120,.2), transparent 26%), linear-gradient(180deg, transparent 56%, rgba(8,10,11,.5)); }
-  .scene-horizon { position: absolute; right: 9%; bottom: 23px; left: 9%; height: 1px; background: rgba(200,168,120,.38); box-shadow: 0 0 22px rgba(200,168,120,.35); }
-  .scene-orb { position: absolute; top: 22px; left: 17%; width: 38px; height: 38px; border: 1px solid rgba(233,229,220,.36); border-radius: 50%; animation: orb-float 5s ease-in-out infinite; }
-  .scene-orb-two { top: auto; right: 22%; bottom: 16px; left: auto; width: 7px; height: 7px; background: var(--accent); border: 0; box-shadow: 0 0 22px var(--accent); animation-delay: -1.6s; }
-  .scene-caption { position: absolute; right: 14px; bottom: 10px; color: rgba(233,229,220,.65); font: 9px Arial, sans-serif; letter-spacing: .24em; text-transform: uppercase; }
-  .scene-sea .scene-visual { background: linear-gradient(180deg, #253b42, #111d21); }
-  .scene-sea .scene-visual::before { background: repeating-linear-gradient(180deg, transparent 0 13px, rgba(130,190,198,.14) 14px 15px, transparent 16px 28px); animation: wave 5s ease-in-out infinite; }
-  .scene-night .scene-visual { background: linear-gradient(180deg, #111a2b, #15191c); }
-  .scene-night .scene-orb { box-shadow: 0 0 35px rgba(174,190,222,.32); }
-  .scene-snow .scene-visual { background: linear-gradient(180deg, #34414c, #182023); }
-  .scene-snow .scene-visual::before { background-image: radial-gradient(circle, rgba(255,255,255,.65) 0 1px, transparent 2px); background-size: 23px 19px; animation: snow 7s linear infinite; }
-  .scene-spring .scene-visual { background: linear-gradient(180deg, #354139, #1d2722); }
-  .scene-spring .scene-orb-two { background: #b8c894; box-shadow: 0 0 22px #b8c894; }
+  .story-card { position: relative; z-index: 2; width: min(760px, calc(100% - 48px)); margin: auto; padding: 28px 0 26px; animation: appear .8s ease both; }
+  /* WebGL 场景是**整屏背景**，不是卡片里的装饰条。
+     固定在视口上，`pointer-events: none` 保证任何点击/悬停都落到内容层。 */
+  .scene-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+  .scene-canvas canvas { display: block; width: 100%; height: 100%; }
+  /* 只压暗上下边缘：给顶栏与页脚留可读性，画面主体区域完整透出 3D 场景。
+     早期版本用整屏径向遮罩，把本就偏暗的场景又压掉十几个色阶，
+     结果所有章节都糊成同一片黑——这正是「背景看不出变化」的原因。 */
+  .story-shell::after { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background: linear-gradient(180deg, rgba(8,10,11,.60) 0, rgba(8,10,11,.22) 17%, rgba(8,10,11,0) 32%),
+                linear-gradient(0deg, rgba(8,10,11,.64) 0, rgba(8,10,11,.20) 15%, rgba(8,10,11,0) 29%); }
+  /* 场景角标：并入元信息行，作为静态文本而非叠在画面上的浮层 */
+  .scene-caption { margin-left: auto; color: rgba(233,229,220,.5); font: 9px Arial, sans-serif; letter-spacing: .24em; text-transform: uppercase; }
 .story-shell.scene-rain-cursor, .story-shell.scene-rain-cursor button { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath d='M14 2v17M8 12l6 7 6-7' fill='none' stroke='%239ab8bd' stroke-width='1.5'/%3E%3C/svg%3E") 4 3, auto; }
 .story-shell.scene-sea-cursor, .story-shell.scene-sea-cursor button { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath d='M3 16c4-7 8 7 12 0s8 7 10 0M5 21c4-5 7 5 11 0s6 4 8 0' fill='none' stroke='%238bc1c6' stroke-width='1.5'/%3E%3C/svg%3E") 4 4, auto; }
 .story-shell.scene-night-cursor, .story-shell.scene-night-cursor button { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath d='M20 4a10 10 0 1 0 4 17A9 9 0 0 1 20 4Z' fill='none' stroke='%23b8c6e4' stroke-width='1.5'/%3E%3C/svg%3E") 4 4, auto; }
 .story-shell.scene-snow-cursor, .story-shell.scene-snow-cursor button { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath d='M14 4v20M5 9l18 10M5 19 23 9M8 5l12 18M20 5 8 23' fill='none' stroke='%23d7e7ed' stroke-width='1.2'/%3E%3C/svg%3E") 4 4, auto; }
 .story-shell.scene-spring-cursor, .story-shell.scene-spring-cursor button { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath d='M14 24V8M14 13C8 13 6 9 7 5c5 0 8 3 7 8Zm0 3c6 0 8-4 7-8-5 0-8 3-7 8Z' fill='none' stroke='%23b8c894' stroke-width='1.5'/%3E%3C/svg%3E") 4 4, auto; }
-.scene-visual { transition: background .45s ease, filter .45s ease; }
-  @keyframes scene-drift { to { transform: translateX(-36px); } }
-  @keyframes wave { 50% { transform: translateX(16px) scaleY(1.2); } }
-  @keyframes snow { to { background-position: 0 120px; } }
-  @keyframes orb-float { 50% { transform: translate(16px, -7px); opacity: .55; } }
   @keyframes appear { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 .story-meta { gap: 16px; color: var(--accent); font-family: Arial, sans-serif; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; }
 .meta-line { width: 42px; height: 1px; background: var(--line); }
-.story-body { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-top: 19px; padding: 48px 10px 43px; text-align: center; }
+.story-body { position: relative; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-top: 19px; padding: 48px 10px 43px; text-align: center; }
+/* 正文柔光面板：局部承担可读性，羽化到透明，不遮挡周围场景 */
+.story-body::before { content: ''; position: absolute; inset: -48px -34px; z-index: -1; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, rgba(9,12,13,.46) 0, rgba(9,12,13,.30) 50%, rgba(9,12,13,.08) 78%, rgba(9,12,13,0) 100%); }
 .eyebrow { margin: 0 0 17px; color: #7f8788; font-family: Arial, sans-serif; font-size: 9px; letter-spacing: .3em; }
 h1 { margin: 0; color: #f0ece3; font-size: clamp(40px, 6vw, 72px); font-weight: 400; letter-spacing: -.05em; line-height: .98; }
 .story-text { width: min(540px, 100%); margin: 30px auto 0; color: #b7bbb7; font-size: 16px; line-height: 2; }
@@ -101,7 +95,7 @@ h1 { margin: 0; color: #f0ece3; font-size: clamp(40px, 6vw, 72px); font-weight: 
 
 .generator-trigger { display: inline-flex; align-items: center; gap: 6px; padding: 7px 9px; color: var(--accent); background: transparent; border: 1px solid rgba(200,168,120,.35); cursor: pointer; font-size: 9px; letter-spacing: .08em; }
 .generator-trigger svg { width: 12px; height: 12px; }
-.save-note { position: relative; z-index: 2; display: flex; align-items: center; gap: 7px; width: fit-content; margin: 17px auto -8px; color: #9ba09d; font-family: Arial, sans-serif; font-size: 10px; letter-spacing: .05em; animation: appear .4s ease both; }
+.save-note { position: relative; z-index: 3; display: flex; align-items: center; gap: 7px; width: fit-content; margin: 17px auto -8px; color: #9ba09d; font-family: Arial, sans-serif; font-size: 10px; letter-spacing: .05em; animation: appear .4s ease both; }
 .save-note svg { width: 13px; height: 13px; color: var(--accent); }
 .generator-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 24px; background: rgba(8,10,11,.76); backdrop-filter: blur(8px); }
 .generator-panel, .info-panel { position: relative; width: min(520px, 100%); padding: 40px; color: #b7bbb7; background: #202629; border: 1px solid rgba(233,229,220,.2); box-shadow: 0 24px 80px rgba(0,0,0,.4); }
@@ -194,6 +188,6 @@ h1 { margin: 0; color: #f0ece3; font-size: clamp(40px, 6vw, 72px); font-weight: 
 
 @media (max-width: 600px) { .story-map { height: min(350px, 48dvh); } .map-label { max-width: 75px; font-size: 9px; } .generator-panel, .info-panel { padding: 30px 22px; } .generator-panel h2, .info-panel h2 { font-size: 30px; } .map-panel { padding: 28px 16px; } .map-panel > p:not(.eyebrow) { font-size: 12px; margin-bottom: 12px; } .map-legend { gap: 9px; font-size: 9px; } }
 @media (max-width: 760px) { .story-shell { overflow-y: auto; } .topbar { align-items: flex-start; gap: 12px; padding-top: 16px; } .brand { flex: 0 0 auto; } .top-actions { justify-content: flex-end; flex-wrap: wrap; gap: 7px 10px; } .utility-button { padding: 4px 0; font-size: 9px; } .utility-button svg { width: 13px; height: 13px; } .chapter-count { font-size: 9px; } .story-card { margin-top: 0; } }
-@media (max-height: 700px) and (min-width: 601px) { .topbar { padding-top: 16px; } .story-card { padding-top: 12px; } .scene-visual { height: 76px; margin-bottom: 12px; } .story-body { margin-top: 12px; padding-block: 25px 24px; } .story-text { margin-top: 18px; line-height: 1.65; } blockquote { margin-block: 18px 22px; } .page-footer { padding-bottom: 12px; } }
+@media (max-height: 700px) and (min-width: 601px) { .topbar { padding-top: 16px; } .story-card { padding-top: 12px; } .story-body { margin-top: 12px; padding-block: 25px 24px; } .story-text { margin-top: 18px; line-height: 1.65; } blockquote { margin-block: 18px 22px; } .page-footer { padding-bottom: 12px; } }
 
 
