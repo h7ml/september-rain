@@ -1,0 +1,160 @@
+/**
+ * 第一人称叙事 HUD 样式。
+ *
+ * 单独一份文件而不是追加进 `globals.css`：`globals.css` 描述的是「一屏一张卡片」
+ * 的旧版面（`.story-card`、`.story-body`、`.story-map` 等），HUD 是另一套空间规则
+ * ——**UI 包围画面，而不是占据画面**。混在一起改一处会牵动另一处。
+ *
+ * 视觉语言仍完全继承现有体系：`#0d1213 ~ #1e2929` 墨绿灰阶、`--accent: #c8a878`
+ * 琥珀、Arial 的小字距标签、宋体正文。这里只新增布局，不新增配色。
+ */
+
+.hud-layer { position: fixed; inset: 0; z-index: 5; pointer-events: none; }
+/* 覆盖层整体不吃指针事件，只有具体控件才接管——
+   否则玩家没法「点击画面」进入指针锁定，第一人称的核心操作会被自己糊死。 */
+.hud-layer button, .hud-gate-veil { pointer-events: auto; }
+
+/* ------------------------------------------------------------------ *
+ * 顶栏
+ * ------------------------------------------------------------------ */
+
+/* 旧版顶栏是页面的第一行，现在它浮在画面上。压暗只压在它自己身上，
+   不做整条渐变横幅——横幅会在视平线上方切出一条硬边。 */
+.hud-topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 18px 22px; background: linear-gradient(180deg, rgba(8,10,11,.55), rgba(8,10,11,0)); }
+.hud-place { display: flex; align-items: baseline; gap: 12px; min-width: 0; }
+.hud-location { color: #e0dcd3; font-size: 12px; letter-spacing: .06em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hud-year { color: var(--accent); font: 9px Arial, sans-serif; letter-spacing: .22em; text-transform: uppercase; }
+.hud-actions { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; }
+.hud-icon-button { display: grid; place-items: center; width: 30px; height: 30px; padding: 0;
+  color: #b7bbb5; background: transparent; border: 1px solid transparent; cursor: pointer; transition: .2s ease; }
+.hud-icon-button:hover { color: #f0ece3; border-color: rgba(233,229,220,.24); background: rgba(233,229,220,.05); }
+.hud-icon-button svg { width: 15px; height: 15px; stroke-width: 1.4; }
+.hud-progress { margin-left: 10px; color: var(--accent); font: 9px Arial, sans-serif; letter-spacing: .16em; }
+/* 场景未实现时的角标。放在地点名旁边而不是弹提示：它是持续状态，不是一次性事件。 */
+.hud-scene-flag { padding: 2px 6px; color: #d7c4a2; background: rgba(200,168,120,.12);
+  border: 1px solid rgba(200,168,120,.3); font-size: 10px; letter-spacing: .04em; }
+
+/* 宿主提示条。贴着顶栏左对齐，玩家读正文时视线不会被它拽走。 */
+.hud-notice { display: flex; align-items: center; gap: 7px; width: fit-content; margin: 0 22px;
+  padding: 6px 10px; color: #b4b8b3; background: rgba(8,10,11,.6); border: 1px solid rgba(233,229,220,.12);
+  font-size: 11px; letter-spacing: .04em; animation: appear .4s ease both; }
+.hud-notice svg { width: 12px; height: 12px; color: var(--accent); }
+
+/* ------------------------------------------------------------------ *
+ * 准星
+ * ------------------------------------------------------------------ */
+
+.hud-crosshair { position: absolute; top: 50%; left: 50%; width: 24px; height: 24px;
+  display: grid; place-items: center; transform: translate(-50%, -50%); }
+.hud-crosshair-mark { display: block; width: 3px; height: 3px; border-radius: 50%;
+  background: rgba(240,236,227,.9); box-shadow: 0 0 0 1px rgba(8,10,11,.6); transition: .18s ease; }
+/* 对准热点：点扩成圆环，并在外侧留一圈极淡的琥珀。用 box-shadow 而不是换元素，
+   避免每帧聚焦切换时重建 DOM 节点。 */
+.hud-crosshair.is-focused .hud-crosshair-mark { width: 14px; height: 14px; background: transparent;
+  border: 1px solid rgba(200,168,120,.95); box-shadow: 0 0 0 3px rgba(200,168,120,.13), 0 0 14px rgba(200,168,120,.35); }
+/* 提示挂在准星下沿 26px 处，视线不用离开焦点就能读到。 */
+.hud-focus-label { position: absolute; top: calc(50% + 26px); left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; animation: appear .25s ease both; }
+.hud-focus-label span { color: #f0ece3; font-size: 13px; letter-spacing: .04em; }
+.hud-focus-label small { color: rgba(200,168,120,.85); font: 9px Arial, sans-serif; letter-spacing: .2em; text-transform: uppercase; }
+
+/* ------------------------------------------------------------------ *
+ * 指针锁定引导
+ * ------------------------------------------------------------------ */
+
+/* 遮罩比弹窗浅得多：玩家需要看得见场景，才知道「点击进入」进入的是哪里。 */
+.hud-gate-veil { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px;
+  background: radial-gradient(ellipse at center, rgba(8,10,11,.35) 0, rgba(8,10,11,.62) 100%); cursor: pointer; }
+.hud-gate-card { width: min(420px, 100%); padding: 26px 28px; text-align: center;
+  background: rgba(16,20,21,.72); border: 1px solid rgba(233,229,220,.18); backdrop-filter: blur(3px); }
+.hud-gate-kicker { margin: 0 0 10px; color: var(--accent); font: 9px Arial, sans-serif; letter-spacing: .3em; }
+.hud-gate-title { margin: 0 0 20px; color: #f0ece3; font-size: 26px; font-weight: 400; letter-spacing: -.02em; }
+.hud-keys { display: grid; gap: 8px; margin: 0 0 18px; padding: 0; list-style: none; text-align: left; }
+.hud-keys li { display: flex; gap: 14px; align-items: baseline; padding: 8px 11px;
+  background: rgba(255,255,255,.025); border: 1px solid rgba(233,229,220,.1); }
+.hud-keys b { flex: 0 0 74px; color: var(--accent); font-size: 11px; font-weight: 400; letter-spacing: .04em; }
+.hud-keys span { color: #9ba09d; font-size: 11px; line-height: 1.6; }
+.hud-gate-hint { margin: 0; color: #8f9a92; font-size: 11px; line-height: 1.7; }
+
+/* ------------------------------------------------------------------ *
+ * 底部字幕层
+ * ------------------------------------------------------------------ */
+
+/* 从下沿升起。上边界用线性渐变羽化，避免在画面中间切出一条直线。 */
+/* `max-height` 是硬约束（不能吃掉超过半屏），所以**可能**放不下——
+   超长选项注解在窄屏上确实会撑破。此时允许内部滚动：把按钮裁掉会让玩家
+   看得见却点不到，那是比滚动更坏的失败。 */
+.hud-subtitle { position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column;
+  gap: 12px; max-height: 56vh; overflow-y: auto; overscroll-behavior: contain;
+  padding: 40px max(28px, calc((100% - 880px) / 2)) 26px;
+  background: linear-gradient(0deg, rgba(8,10,11,.86) 0, rgba(8,10,11,.62) 58%, rgba(8,10,11,0) 100%);
+  animation: hud-rise .45s ease both; }
+@keyframes hud-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+.hud-subtitle-head { display: flex; align-items: baseline; gap: 14px; }
+.hud-subtitle-year { color: var(--accent); font: 9px Arial, sans-serif; letter-spacing: .22em; text-transform: uppercase; }
+.hud-subtitle-title { margin: 0; color: #f0ece3; font-size: 22px; font-weight: 400; letter-spacing: -.02em; }
+/* 正文强制单栏窄栏。宽屏下整行正文会让视线左右扫动，第一人称里尤其晕。 */
+.hud-subtitle-body { display: flex; flex-direction: column; gap: 8px; width: min(660px, 100%); }
+.hud-subtitle-body p { margin: 0; color: #c3c7c2; font-size: 14px; line-height: 1.9; }
+.hud-more { align-self: flex-start; padding: 5px 0; color: var(--accent); background: transparent; border: 0;
+  border-bottom: 1px solid rgba(200,168,120,.35); cursor: pointer; font-size: 11px; }
+.hud-more:hover { border-color: var(--accent); }
+.hud-quote { margin: 2px 0 0; color: var(--accent); font-size: 14px; font-style: italic; }
+.hud-gate-note { margin: 0; padding: 11px 14px; color: #b4b8b3; font-size: 12px;
+  background: rgba(200,168,120,.08); border-left: 2px solid var(--accent); }
+
+/* 选项：沿用 `.choice-button` 的底色与描边，只改排布。
+   两个选项并排（玩家一眼扫完两个），三个以上退化成两列网格——
+   单行塞三个会让「排在前面」与「排在后面」的语义被挤没。 */
+.hud-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; width: min(720px, 100%); }
+.hud-choices.is-grid { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.hud-choice { position: relative; padding: 12px 14px; }
+.hud-choice:hover { transform: translateX(3px); }
+.hud-choice strong { font-size: 13px; }
+.hud-choice small { font-size: 10px; }
+.hud-choice-key { position: absolute; top: 6px; right: 8px; color: rgba(233,229,220,.28);
+  font: 9px Arial, sans-serif; font-style: normal; letter-spacing: .08em; }
+
+/* ------------------------------------------------------------------ *
+ * 终态
+ * ------------------------------------------------------------------ */
+
+/* 结局不再给选择，只给一段话和一个出口。左侧竖线用来把它和普通段落区分开——
+   玩家应该一眼看出「这里不一样了」，而不必去读按钮有没有。 */
+.hud-ending { display: flex; flex-direction: column; gap: 9px; width: min(660px, 100%);
+  padding: 14px 16px; border-left: 2px solid var(--accent); background: rgba(200,168,120,.07); }
+.hud-ending-kicker { margin: 0; color: var(--accent); font: 9px Arial, sans-serif; letter-spacing: .24em; text-transform: uppercase; }
+.hud-ending-text { margin: 0; color: #c3c7c2; font-size: 13px; line-height: 1.9; }
+/* 三种基调只差色温：暖（琥珀）、苦甜（青灰）、静（月光白）。 */
+.hud-ending.is-bittersweet { border-left-color: #8fb8bd; background: rgba(143,184,189,.07); }
+.hud-ending.is-bittersweet .hud-ending-kicker { color: #9fc4c8; }
+.hud-ending.is-quiet { border-left-color: #b8c6e4; background: rgba(184,198,228,.06); }
+.hud-ending.is-quiet .hud-ending-kicker { color: #b8c6e4; }
+.hud-ending-action { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start;
+  padding: 9px 13px; color: var(--accent); background: transparent; border: 1px solid rgba(200,168,120,.45);
+  cursor: pointer; font-size: 11px; letter-spacing: .06em; }
+.hud-ending-action:hover { background: rgba(200,168,120,.12); }
+.hud-ending-action svg { width: 13px; height: 13px; }
+
+/* ------------------------------------------------------------------ *
+ * 心情指示
+ * ------------------------------------------------------------------ */
+
+/* 左下角，与字幕层的上沿错开。刻意极小：它是氛围，不是仪表盘。 */
+.hud-mood { position: absolute; left: 22px; bottom: 22px; display: flex; gap: 14px; opacity: .55; }
+.hud-mood-item { display: flex; flex-direction: column; gap: 5px; align-items: flex-start; }
+.hud-mood-track { display: block; width: 44px; height: 2px; background: rgba(233,229,220,.16); }
+.hud-mood-fill { display: block; width: 100%; height: 100%; background: var(--accent); transform-origin: left center; transition: transform .5s ease; }
+.hud-mood-item > span { color: #8f9694; font: 9px Arial, sans-serif; letter-spacing: .14em; }
+
+@media (max-width: 760px) {
+  .hud-topbar { padding: 12px 14px; }
+  .hud-subtitle { max-height: 62vh; padding: 32px 16px 18px; gap: 9px; }
+  .hud-subtitle-title { font-size: 18px; }
+  .hud-subtitle-body p { font-size: 13px; line-height: 1.8; }
+  /* 窄屏下两个选项并排会把每格压到 150px 以下，注解文字只能断成三行，反而更难读。 */
+  .hud-choices, .hud-choices.is-grid { grid-template-columns: minmax(0, 1fr); }
+  .hud-mood { display: none; }
+  .hud-keys b { flex-basis: 60px; }
+}
